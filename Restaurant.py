@@ -22,13 +22,16 @@ class Restaurant(threading.Thread):
         self.id = ide
         self.port = port
         self.ring_address = ring_address
+        self.ring_ids_dict = {'RESTAURANT': self.id,'WAITER': None,'CHEF': None,'CLERK': None}
 
         if ring_address is None:
             self.successor_id = self.id
             self.successor_port = self.port
+            self.inside_ring = True
         else:
             self.successor_id = None
             self.successor_port = None
+            self.inside_ring = False
 
         self.grelhador = Grelhador(30)
         self.bebidas = Bebidas(10)
@@ -39,7 +42,7 @@ class Restaurant(threading.Thread):
 
     def send(self, port, o):
         p = pickle.dumps(o)
-        self.socket.sendto(p, port)
+        self.socket.sendto(p, ('localhost', port))
 
     def recv(self):
         try:
@@ -53,6 +56,8 @@ class Restaurant(threading.Thread):
                 return p, port
 
     def node_join(self, args):
+        self.logger.debug('Node join: %s', args)
+
         pass
 
     def node_discovery(self):
@@ -67,6 +72,14 @@ class Restaurant(threading.Thread):
 
     def run(self):
         print("ID-0")
+
+        self.socket.bind(('localhost', self.port))
+        while not self.inside_ring:
+            o = {'method': 'JOIN_RING', 'args': {'addr': self.port, 'id': self.id}}
+            self.send(self.ring_address, o)
+            p, addr = self.recv()
+
+
 
 
 class Grelhador(object):

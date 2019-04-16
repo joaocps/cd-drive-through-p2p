@@ -22,13 +22,16 @@ class Clerk(threading.Thread):
         self.id = ide
         self.port = port
         self.ring_address = ring_address
+        self.ring_ids_dict = {'RESTAURANT': None, 'WAITER': None, 'CHEF': None, 'CLERK': self.id}
 
         if ring_address is None:
             self.successor_id = self.id
             self.successor_port = self.port
+            self.inside_ring = True
         else:
             self.successor_id = None
             self.successor_port = None
+            self.inside_ring = False
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.logger = logging.getLogger("Node {}".format(self.id))
@@ -49,6 +52,7 @@ class Clerk(threading.Thread):
                 return p, port
 
     def node_join(self, args):
+        self.logger.debug('Node join: %s', args)
         pass
 
     def node_discovery(self):

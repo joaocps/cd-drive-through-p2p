@@ -22,20 +22,23 @@ class Waiter(threading.Thread):
         self.id = ide
         self.port = port
         self.ring_address = ring_address
+        self.ring_ids_dict = {'RESTAURANT': None, 'WAITER': self.id, 'CHEF': None, 'CLERK': None}
 
         if ring_address is None:
             self.successor_id = self.id
             self.successor_port = self.port
+            self.inside_ring = True
         else:
             self.successor_id = None
             self.successor_port = None
+            self.inside_ring = False
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.logger = logging.getLogger("Node {}".format(self.id))
 
     def send(self, port, o):
         p = pickle.dumps(o)
-        self.socket.sendto(p, port)
+        self.socket.sendto(p, ('localhost', port))
 
     def recv(self):
         try:
@@ -49,6 +52,7 @@ class Waiter(threading.Thread):
                 return p, port
 
     def node_join(self,args):
+        self.logger.debug('Node join: %s', args)
         pass
 
     def node_discovery(self):
@@ -63,3 +67,19 @@ class Waiter(threading.Thread):
 
     def run(self):
         print("ID-1")
+
+        self.socket.bind(('localhost', self.port))
+        while not self.inside_ring:
+            o = {'method': 'JOIN_RING', 'args': {'addr': self.port, 'id': self.id}}
+            self.send(self.ring_address, o)
+            p, addr = self.recv()
+            if p is not None:
+                o = pickle.loads(p)
+                self.logger.debug('O: %s', o)
+                if o['method'] == 'JOIN_REP':
+                    args = o['args']
+                    self.successor_id = args['successor_id']
+                    self.successor_port = args['successor_addr']
+                    self.inside_ring = True
+                    self.logger.info(self)
+
