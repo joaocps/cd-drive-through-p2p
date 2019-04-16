@@ -68,3 +68,7 @@ class Clerk(threading.Thread):
     def run(self):
 
         print("ID-3")
+
+        print(('localhost', self.port))
+        print(self.successor_id)
+        print(self.successor_port)

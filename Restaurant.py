@@ -58,7 +58,16 @@ class Restaurant(threading.Thread):
     def node_join(self, args):
         self.logger.debug('Node join: %s', args)
 
-        pass
+        port = args['addr']
+        identification = args['id']
+
+        if self.id == self.successor_id:
+            print("imhere")
+            self.successor_id = identification
+            self.successor_port = port
+            args = {'successor_id': self.id, 'successor_port': self.port}
+            self.send(port, {'method': 'JOIN_REP', 'args': args})
+
 
     def node_discovery(self):
         pass
@@ -74,12 +83,34 @@ class Restaurant(threading.Thread):
         print("ID-0")
 
         self.socket.bind(('localhost', self.port))
+
+        print(('localhost', self.port))
+        print(self.successor_id)
+        print(self.successor_port)
+
         while not self.inside_ring:
             o = {'method': 'JOIN_RING', 'args': {'addr': self.port, 'id': self.id}}
             self.send(self.ring_address, o)
             p, addr = self.recv()
+            if p is not None:
+                print("hello")
+                o = pickle.loads(p)
+                self.logger.debug('O: %s', o)
+                if o['method'] == 'JOIN_REP':
+                    args = o['args']
+                    self.successor_id = args['successor_id']
+                    self.successor_port = args['successor_port']
+                    self.inside_ring = True
 
-
+        done = False
+        while not done:
+            p, addr = self.recv()
+            if p is not None:
+                print("hello")
+                o = pickle.loads(p)
+                self.logger.info('O: %s', o)
+                if o['method'] == 'JOIN_RING':
+                    self.node_join(o['args'])
 
 
 class Grelhador(object):

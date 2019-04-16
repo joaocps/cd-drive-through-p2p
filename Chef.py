@@ -67,3 +67,8 @@ class Chef(threading.Thread):
 
     def run(self):
         print("ID-2")
+
+        print(('localhost', self.port))
+        print(self.successor_id)
+        print(self.successor_port)
+
