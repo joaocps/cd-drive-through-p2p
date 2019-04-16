@@ -21,8 +21,10 @@ $ python client.py
 Keep your fork sync with the upstream
 
 ```console
-$ git remote add upstream git@github.com:mariolpantunes/restaurant-p2p.git
-$ git pull upstream master
+$ git remote add upstream git@github.com:mariolpantunes/load-balancer.git
+$ git fetch upstream
+$ git checkout master
+$ git merge upstream/master
 ```
 
 ## Authors

@@ -33,7 +33,7 @@ def main(port, ring, timeout):
     sock.sendto(p, ring)
 
     # Wait for Ticket
-    p = sock.recvfrom(1024)
+    p, addr = sock.recvfrom(1024)
     o = pickle.loads(p)
     logger.info('Received ticket %s', o[args])
 
@@ -43,12 +43,12 @@ def main(port, ring, timeout):
     sock.sendto(p, ring)
 
     # Wait for order
-    p = sock.recvfrom(1024)
+    p, addr = sock.recvfrom(1024)
     o = pickle.loads(p)
     logger.info('Got order %s', o[args])
 
     # Close socket
-    socket.close()
+    sock.close()
 
     return 0
 
