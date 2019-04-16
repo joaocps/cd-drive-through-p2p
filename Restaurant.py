@@ -30,9 +30,9 @@ class Restaurant(threading.Thread):
             self.successor_id = None
             self.successor_port = None
 
-        self.grelhador = Grelhador()
-        self.bebidas = Bebidas()
-        self.fritadeira = Fritadeira()
+        self.grelhador = Grelhador(30)
+        self.bebidas = Bebidas(10)
+        self.fritadeira = Fritadeira(50)
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.logger = logging.getLogger("Node {}".format(self.id))
@@ -70,33 +70,25 @@ class Restaurant(threading.Thread):
 
 
 class Grelhador(object):
-
-    def __init__(self,time):
+    def __init__(self, time):
         self.avg_time = time
 
     def grelhar(self, avg_time):
+        time.sleep(random.gauss(avg_time, 5))
 
-        avg_time = random.gauss(30,5)
-        time.sleep(avg_time)
 
 
 class Bebidas(object):
-
     def __init__(self, time):
         self.avg_time = time
 
     def prepBebida(self, avg_time):
-
-        avg_time = random.gauss(10,5)
-        time.sleep(avg_time)
+        time.sleep(random.gauss(avg_time, 5))
 
 
 class Fritadeira(object):
-
     def __init__(self, time):
         self.avg_time = time
 
     def fritar(self, avg_time):
-
-        avg_time = random.gauss(50,5)
-        time.sleep(avg_time)
+        time.sleep(random.gauss(avg_time, 5))
