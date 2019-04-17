@@ -77,7 +77,6 @@ class Clerk(threading.Thread):
             self.successor_port = port
             self.send(port, {'method': 'JOIN_REP', 'args': args})
         else:
-            print("Successor i want", self.successor_port)
             self.logger.debug('Find Successor(%d)', args['id'])
             self.send(self.successor_port, {'method': 'JOIN_RING', 'args': args})
         self.logger.info(self)
@@ -86,20 +85,14 @@ class Clerk(threading.Thread):
         pass
 
     def __str__(self):
-        return 'Node ID: {}; Ring Address: {}; Successor: {}; ' \
-            .format(self.id, self.ring_address, self.successor_id)
+        return 'Node ID: {}; Ring Address: {}; Successor_id: {}; Successor_port: {};' \
+            .format(self.id, self.ring_address, self.successor_id, self.successor_port)
 
     def __repr__(self):
         return self.__str__()
 
     def run(self):
-        print("ID-1")
-
         self.socket.bind(('localhost', self.port))
-
-        print(('localhost', self.port))
-        print(self.successor_id)
-        print(self.successor_port)
 
         while not self.inside_ring:
             o = {'method': 'JOIN_RING', 'args': {'addr': self.port, 'id': self.id}}
@@ -114,8 +107,6 @@ class Clerk(threading.Thread):
                     self.successor_port = args['successor_port']
                     self.inside_ring = True
                     self.logger.info(self)
-
-            print("New successor id of Node3", self.successor_id)
 
         done = False
         while not done:
