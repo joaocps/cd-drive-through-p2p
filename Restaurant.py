@@ -78,7 +78,7 @@ class Restaurant(threading.Thread):
             self.send(port, {'method': 'JOIN_REP', 'args': args})
 
         elif contains_successor(self.id, self.successor_id, identification):
-            args = {'successor_id': self.successor_id, 'successor_addr': self.successor_port}
+            args = {'successor_id': self.successor_id, 'successor_port': self.successor_port}
             self.successor_id = identification
             self.successor_port = port
             self.send(port, {'method': 'JOIN_REP', 'args': args})
