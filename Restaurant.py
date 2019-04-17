@@ -15,6 +15,14 @@ logging.basicConfig(level=logging.DEBUG,
 logger = logging.getLogger('Restaurant')
 
 
+def contains_successor(identification, successor, node):
+    if identification < node <= successor:
+        return True
+    elif successor < identification and (node > identification or node < successor):
+        return True
+    return False
+
+
 class Restaurant(threading.Thread):
     def __init__(self, port=5000, ide=0, ring_address = None):
         threading.Thread.__init__(self)
@@ -62,11 +70,21 @@ class Restaurant(threading.Thread):
         identification = args['id']
 
         if self.id == self.successor_id:
-            print("imhere")
             self.successor_id = identification
             self.successor_port = port
             args = {'successor_id': self.id, 'successor_port': self.port}
             self.send(port, {'method': 'JOIN_REP', 'args': args})
+
+        elif contains_successor(self.id, self.successor_id, identification):
+            args = {'successor_id': self.successor_id, 'successor_addr': self.successor_port}
+            self.successor_id = identification
+            self.successor_port = port
+            self.send(port, {'method': 'JOIN_REP', 'args': args})
+        else:
+            print("Successor i want", self.successor_port)
+            self.logger.debug('Find Successor(%d)', args['id'])
+            self.send(self.successor_port, {'method': 'JOIN_RING', 'args': args})
+        self.logger.info(self)
 
 
     def node_discovery(self):
@@ -93,7 +111,6 @@ class Restaurant(threading.Thread):
             self.send(self.ring_address, o)
             p, addr = self.recv()
             if p is not None:
-                print("hello")
                 o = pickle.loads(p)
                 self.logger.debug('O: %s', o)
                 if o['method'] == 'JOIN_REP':
@@ -101,12 +118,12 @@ class Restaurant(threading.Thread):
                     self.successor_id = args['successor_id']
                     self.successor_port = args['successor_port']
                     self.inside_ring = True
+                    self.logger.info(self)
 
         done = False
         while not done:
             p, addr = self.recv()
             if p is not None:
-                print("hello")
                 o = pickle.loads(p)
                 self.logger.info('O: %s', o)
                 if o['method'] == 'JOIN_RING':

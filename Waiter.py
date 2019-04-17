@@ -14,6 +14,12 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt='%m-%d %H:%M:%S')
 logger = logging.getLogger('Waiter')
 
+def contains_successor(identification, successor, node):
+    if identification < node <= successor:
+        return True
+    elif successor < identification and (node > identification or node < successor):
+        return True
+    return False
 
 class Waiter(threading.Thread):
     def __init__(self, port=5001, ide=1, ring_address = 5000):
@@ -53,7 +59,26 @@ class Waiter(threading.Thread):
 
     def node_join(self,args):
         self.logger.debug('Node join: %s', args)
-        pass
+
+        port = args['addr']
+        identification = args['id']
+
+        if self.id == self.successor_id:
+            self.successor_id = identification
+            self.successor_port = port
+            args = {'successor_id': self.id, 'successor_port': self.port}
+            self.send(port, {'method': 'JOIN_REP', 'args': args})
+
+        elif contains_successor(self.id, self.successor_id, identification):
+            args = {'successor_id': self.successor_id, 'successor_port': self.successor_port}
+            self.successor_id = identification
+            self.successor_port = port
+            self.send(port, {'method': 'JOIN_REP', 'args': args})
+        else:
+            print("Successor i want", self.successor_port)
+            self.logger.debug('Find Successor(%d)', args['id'])
+            self.send(self.successor_port, {'method': 'JOIN_RING', 'args':args})
+        self.logger.info(self)
 
     def node_discovery(self):
         pass
@@ -82,20 +107,23 @@ class Waiter(threading.Thread):
             if p is not None:
                 o = pickle.loads(p)
                 self.logger.debug('O: %s', o)
-                if o['method'] == 'JOIN_RING':
-                    args = o['args']
-                    self.successor_id = args['successor_id']
-                    self.successor_port = args['successor_port']
-                    self.inside_ring = True
-                    print("waiter successor id: ", self.successor_id)
                 if o['method'] == 'JOIN_REP':
                     args = o['args']
                     self.successor_id = args['successor_id']
                     self.successor_port = args['successor_port']
-                    self.inside_dht = True
+                    self.inside_ring = True
                     self.logger.info(self)
 
             print("New successor id of Node1", self.successor_id)
+
+        done = False
+        while not done:
+            p, addr = self.recv()
+            if p is not None:
+                o = pickle.loads(p)
+                self.logger.info('O: %s', o)
+                if o['method'] == 'JOIN_RING':
+                    self.node_join(o['args'])
 
         # done = False
         # while not done:
