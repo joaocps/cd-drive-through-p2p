@@ -95,9 +95,6 @@ class Clerk(threading.Thread):
 
         self.send(self.successor_port, {'method': 'NODE_DISCOVERY', 'args': self.ring_ids_dict})
 
-        print(self.ring_ids_dict)
-
-
     def __str__(self):
         return 'Node ID: {}; Ring Address: {}; Successor_id: {}; Successor_port: {};' \
             .format(self.id, self.ring_address, self.successor_id, self.successor_port)

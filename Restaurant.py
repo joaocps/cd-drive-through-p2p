@@ -95,7 +95,6 @@ class Restaurant(threading.Thread):
     def node_discovery(self, args):
 
         last_state = self.ring_ids_dict
-        print("last state", last_state)
 
         if self.ring_ids_dict['WAITER'] is None and args['WAITER'] is not None:
             self.ring_ids_dict['WAITER'] = args['WAITER']
@@ -106,9 +105,10 @@ class Restaurant(threading.Thread):
         if self.ring_ids_dict['CLERK'] is None and args['CLERK'] is not None:
             self.ring_ids_dict['CLERK'] = args['CLERK']
 
-        # if all(value is not None for value in self.ring_ids_dict.values()) and all(last_value is not None for last_value in last_state.values()):
-        #     self.ring_completed = True
-        #     return
+        if all(value is not None for value in self.ring_ids_dict.values()) and all(last_value is not None for last_value in last_state.values()):
+            self.ring_completed = True
+            self.send(self.successor_port, {'method': 'NODE_DISCOVERY', 'args': self.ring_ids_dict})
+            return
 
         self.send(self.successor_port, {'method': 'NODE_DISCOVERY', 'args': self.ring_ids_dict})
 
@@ -144,7 +144,7 @@ class Restaurant(threading.Thread):
                 self.logger.info('O: %s', o)
                 if o['method'] == 'JOIN_RING':
                     self.node_join(o['args'])
-                elif o['method'] == 'NODE_DISCOVERY':
+                elif o['method'] == 'NODE_DISCOVERY' and not self.ring_completed:
                     self.node_discovery(o['args'])
             else:
                 if not self.ring_completed:

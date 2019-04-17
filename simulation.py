@@ -24,15 +24,18 @@ def main():
     chef = Chef()
     clerk = Clerk()
 
+
     restaurant.start()
     waiter.start()
     chef.start()
     clerk.start()
 
+
     restaurant.join()
     waiter.join()
     chef.join()
     clerk.join()
+
 
     return 0
 
