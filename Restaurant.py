@@ -24,12 +24,13 @@ def contains_successor(identification, successor, node):
 
 
 class Restaurant(threading.Thread):
-    def __init__(self, port=5000, ide=0, ring_address = None):
+    def __init__(self, port=5000, ide=0, ring_address = None, timeout = 3):
         threading.Thread.__init__(self)
-        self.name = "Restaurant"
+        self.name = "RESTAURANT"
         self.id = ide
         self.port = port
         self.ring_address = ring_address
+        self.ring_completed = False
         self.ring_ids_dict = {'RESTAURANT': self.id,'WAITER': None,'CHEF': None,'CLERK': None}
 
         if ring_address is None:
@@ -46,6 +47,7 @@ class Restaurant(threading.Thread):
         self.fritadeira = Fritadeira(50)
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.settimeout(timeout)
         self.logger = logging.getLogger("Node {}".format(self.id))
 
     def send(self, port, o):
@@ -90,8 +92,25 @@ class Restaurant(threading.Thread):
             return True
         return False
 
-    def node_discovery(self):
-        pass
+    def node_discovery(self, args):
+
+        last_state = self.ring_ids_dict
+        print("last state", last_state)
+
+        if self.ring_ids_dict['WAITER'] is None and args['WAITER'] is not None:
+            self.ring_ids_dict['WAITER'] = args['WAITER']
+
+        if self.ring_ids_dict['CHEF'] is None and args['CHEF'] is not None:
+            self.ring_ids_dict['CHEF'] = args['CHEF']
+
+        if self.ring_ids_dict['CLERK'] is None and args['CLERK'] is not None:
+            self.ring_ids_dict['CLERK'] = args['CLERK']
+
+        # if all(value is not None for value in self.ring_ids_dict.values()) and all(last_value is not None for last_value in last_state.values()):
+        #     self.ring_completed = True
+        #     return
+
+        self.send(self.successor_port, {'method': 'NODE_DISCOVERY', 'args': self.ring_ids_dict})
 
     def __str__(self):
         return 'Node ID: {}; Ring Address: {}; Successor_id: {}; Successor_port: {};' \
@@ -125,6 +144,12 @@ class Restaurant(threading.Thread):
                 self.logger.info('O: %s', o)
                 if o['method'] == 'JOIN_RING':
                     self.node_join(o['args'])
+                elif o['method'] == 'NODE_DISCOVERY':
+                    self.node_discovery(o['args'])
+            else:
+                if not self.ring_completed:
+                    o = {'method': 'NODE_DISCOVERY', 'args': self.ring_ids_dict}
+                    self.send(self.successor_port, o)
 
 
 class Grelhador(object):

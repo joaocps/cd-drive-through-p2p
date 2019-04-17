@@ -25,10 +25,11 @@ def contains_successor(identification, successor, node):
 class Chef(threading.Thread):
     def __init__(self, port=5002, ide=2, ring_address=5000):
         threading.Thread.__init__(self)
-        self.name = "Chef"
+        self.name = "CHEF"
         self.id = ide
         self.port = port
         self.ring_address = ring_address
+        self.ring_completed = False
         self.ring_ids_dict = {'RESTAURANT': None, 'WAITER': None, 'CHEF': self.id, 'CLERK': None}
 
         if ring_address is None:
@@ -80,8 +81,20 @@ class Chef(threading.Thread):
             self.send(self.successor_port, {'method': 'JOIN_RING', 'args': args})
         self.logger.info(self)
 
-    def node_discovery(self):
-        pass
+    def node_discovery(self, args):
+
+        if self.ring_ids_dict['RESTAURANT'] is None and args['RESTAURANT'] is not None:
+            self.ring_ids_dict['RESTAURANT'] = args['RESTAURANT']
+
+        if self.ring_ids_dict['WAITER'] is None and args['WAITER'] is not None:
+            self.ring_ids_dict['WAITER'] = args['WAITER']
+
+        if self.ring_ids_dict['CLERK'] is None and args['CLERK'] is not None:
+            self.ring_ids_dict['CLERK'] = args['CLERK']
+
+        self.send(self.successor_port, {'method': 'NODE_DISCOVERY', 'args': self.ring_ids_dict})
+
+        print(self.ring_ids_dict)
 
     def __str__(self):
         return 'Node ID: {}; Ring Address: {}; Successor_id: {}; Successor_port: {};' \
@@ -115,5 +128,7 @@ class Chef(threading.Thread):
                 self.logger.info('O: %s', o)
                 if o['method'] == 'JOIN_RING':
                     self.node_join(o['args'])
+                elif o['method'] == 'NODE_DISCOVERY':
+                    self.node_discovery(o['args'])
 
 
