@@ -146,10 +146,35 @@ class Restaurant(threading.Thread):
                     self.node_join(o['args'])
                 elif o['method'] == 'NODE_DISCOVERY' and not self.ring_completed:
                     self.node_discovery(o['args'])
+                elif o['method'] == 'ORDER':
+                    self.send(self.successor_port,o)
+                elif o['method'] == 'PICKUP':
+                    self.send(5004, o)
+                elif o['method'] == 'COOK':
+                    if o['args']['hamburger'] != 0:
+                        nr = o['args']['hamburger']
+                        for i in nr:
+                            Grelhador()
+                            i+= 1
+                        self.send(self.successor_port,{'method': 'COOKED', 'args': {'hamburger': nr}})
+                    elif o['args']['potatoes'] != 0:
+                        nr = o['args']['drinks']
+                        for i in nr:
+                            Bebidas()
+                            i+= 1
+                        self.send(self.successor_port,{'method': 'COOKED', 'args': {'drinks': nr}})
+                    elif o['args']['potatoes'] != 0:
+                        nr = o['args']['potatoes']
+                        for i in nr:
+                            Fritadeira()
+                            i+= 1
+                        self.send(self.successor_port,{'method': 'COOKED', 'args': {'potatoes': nr}})
+                        
             else:
                 if not self.ring_completed:
                     o = {'method': 'NODE_DISCOVERY', 'args': self.ring_ids_dict}
                     self.send(self.successor_port, o)
+                
 
 
 class Grelhador(object):
