@@ -30,6 +30,7 @@ class Waiter(threading.Thread):
         self.ring_address = ring_address
         self.ring_completed = False
         self.ring_ids_dict = {'RESTAURANT': None, 'WAITER': self.id, 'CHEF': None, 'CLERK': None}
+        self.count = 0
 
         if ring_address is None:
             self.successor_id = self.id
@@ -127,4 +128,22 @@ class Waiter(threading.Thread):
                 elif o['method'] == 'NODE_DISCOVERY':
                     self.node_discovery(o['args'])
 
+                elif o['method'] == 'ORDER':
+                    ## colocar fila de espera queue
+                    self.send(self.successor_port,{'method': 'TICKET', 'args': {'nr': self.count, 'args': o['args']}})
+                    self.count+=1
 
+                elif o['method'] == 'COOK':
+                    self.send(self.successor_port,o)
+                elif o['method'] == 'COOKED':
+                    self.send(self.successor_port,o)
+                elif o['method'] == 'DONE':
+                    self.send(self.successor_port,o)
+                elif o['method'] == 'START':
+                    self.send(self.successor_port,o)
+                elif o['method'] == 'TICKET':
+                    self.send(self.successor_port,o)
+                elif o['method'] == 'PICKUP':
+                    self.send(self.successor_port, o)
+                elif o['method'] == 'FINAL':
+                    self.send(self.successor_port, o)

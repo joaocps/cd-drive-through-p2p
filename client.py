@@ -35,17 +35,18 @@ def main(port, ring, timeout):
     # Wait for Ticket
     p, addr = sock.recvfrom(1024)
     o = pickle.loads(p)
-    logger.info('Received ticket %s', o[args])
+    print(o)
+    logger.info('Received ticket %s', o['args'])
 
     # Pickup order 
-    logger.info('Pickup order %s', o[args])
-    p = pickle.dumps({"method": 'PICKUP', "args": o[args]})
+    logger.info('Pickup order %s', o['args'])
+    p = pickle.dumps({"method": 'PICKUP', "args": o['args']})
     sock.sendto(p, ring)
 
     # Wait for order
     p, addr = sock.recvfrom(1024)
     o = pickle.loads(p)
-    logger.info('Got order %s', o[args])
+    logger.info('Got order %s', o['args'])
 
     # Close socket
     sock.close()

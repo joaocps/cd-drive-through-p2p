@@ -146,30 +146,50 @@ class Restaurant(threading.Thread):
                     self.node_join(o['args'])
                 elif o['method'] == 'NODE_DISCOVERY' and not self.ring_completed:
                     self.node_discovery(o['args'])
+
+                #recebe pedido
                 elif o['method'] == 'ORDER':
-                    self.send(self.successor_port,o)
+                    self.send(self.successor_port, o)
+
+                #recebe pagamento do cliente e responde
+                elif o['method'] == 'DONE':
+                    self.send(5004, o['args'])
+
+                elif o['method'] == 'COOKED':
+                    self.send(self.successor_port, o)
+
+                elif o['method'] == 'TICKET':
+                    self.send(5004, o['args'])
+                    self.send(self.successor_port, {'method': 'START', 'args': o['args']})
+
+                elif o['method'] == 'START':
+                    self.send(self.successor_port, o)
+
                 elif o['method'] == 'PICKUP':
+                    self.send(self.successor_port, o)
+
+                elif o['method'] == 'FINAL':
                     self.send(5004, o)
+
+                #recebe o que tem de cozinhar
                 elif o['method'] == 'COOK':
-                    if o['args']['hamburger'] != 0:
-                        nr = o['args']['hamburger']
-                        for i in nr:
-                            Grelhador()
+
+                    if o['args']['args']['hamburger'] != 0:
+                        nr = o['args']['args']['hamburger']
+                        for i in range(nr):
+                            Grelhador(30)
                             i+= 1
-                        self.send(self.successor_port,{'method': 'COOKED', 'args': {'hamburger': nr}})
-                    elif o['args']['potatoes'] != 0:
-                        nr = o['args']['drinks']
-                        for i in nr:
-                            Bebidas()
+                    elif o['args']['args']['drinks'] != 0:
+                        nr = o['args']['args']['drinks']
+                        for i in range(nr):
+                            Bebidas(10)
                             i+= 1
-                        self.send(self.successor_port,{'method': 'COOKED', 'args': {'drinks': nr}})
-                    elif o['args']['potatoes'] != 0:
-                        nr = o['args']['potatoes']
-                        for i in nr:
-                            Fritadeira()
+                    elif o['args']['args']['potatoes'] != 0:
+                        nr = o['args']['args']['potatoes']
+                        for i in range(nr):
+                            Fritadeira(50)
                             i+= 1
-                        self.send(self.successor_port,{'method': 'COOKED', 'args': {'potatoes': nr}})
-                        
+                    self.send(self.successor_port,{'method': 'COOKED', 'args': o['args']})
             else:
                 if not self.ring_completed:
                     o = {'method': 'NODE_DISCOVERY', 'args': self.ring_ids_dict}

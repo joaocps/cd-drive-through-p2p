@@ -12,6 +12,7 @@ from Waiter import Waiter
 from Chef import Chef
 from Clerk import Clerk
 
+
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                     datefmt='%m-%d %H:%M:%S')
@@ -23,6 +24,7 @@ def main():
     waiter = Waiter()
     chef = Chef()
     clerk = Clerk()
+
 
 
     restaurant.start()
