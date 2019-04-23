@@ -35,7 +35,7 @@ def main(port, ring, timeout):
     # Wait for Ticket
     p, addr = sock.recvfrom(1024)
     o = pickle.loads(p)
-    print(o)
+    #print(o)
     logger.info('Received ticket %s', o['args'])
 
     # Pickup order 

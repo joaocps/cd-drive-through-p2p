@@ -159,7 +159,7 @@ class Restaurant(threading.Thread):
                     self.send(self.successor_port, o)
 
                 elif o['method'] == 'TICKET':
-                    self.send(5004, o['args'])
+                    self.send(5004, o)
                     self.send(self.successor_port, {'method': 'START', 'args': o['args']})
 
                 elif o['method'] == 'START':

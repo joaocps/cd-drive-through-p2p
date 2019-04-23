@@ -140,7 +140,7 @@ class Chef(threading.Thread):
                     self.send(self.successor_port,o)
                 elif o['method'] == 'COOKED':
                     self.send(self.successor_port,o)
-                elif o['method'] == 'TICKET':
+                elif o['method'] == 'PICKUP':
                     self.send(self.successor_port, o)
                 elif o['method'] == 'FINAL':
                     self.send(self.successor_port, o)
