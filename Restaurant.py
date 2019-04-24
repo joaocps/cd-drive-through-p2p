@@ -105,7 +105,7 @@ class Restaurant(threading.Thread):
         if self.ring_ids_dict['CLERK'] is None and args['CLERK'] is not None:
             self.ring_ids_dict['CLERK'] = args['CLERK']
 
-        if all(value is not None for value in self.ring_ids_dict.values()) and all(last_value is not None for last_value in last_state.values()):
+        if all(value is not None for value in self.ring_ids_dict.values()):
             self.ring_completed = True
             self.send(self.successor_port, {'method': 'NODE_DISCOVERY', 'args': self.ring_ids_dict})
             return
