@@ -94,8 +94,6 @@ class Restaurant(threading.Thread):
 
     def node_discovery(self, args):
 
-        last_state = self.ring_ids_dict
-
         if self.ring_ids_dict['WAITER'] is None and args['WAITER'] is not None:
             self.ring_ids_dict['WAITER'] = args['WAITER']
 
@@ -177,18 +175,19 @@ class Restaurant(threading.Thread):
                     if o['args']['args']['hamburger'] != 0:
                         nr = o['args']['args']['hamburger']
                         for i in range(nr):
-                            Grelhador(30)
-                            i+= 1
-                    elif o['args']['args']['drinks'] != 0:
-                        nr = o['args']['args']['drinks']
+                            Grelhador(3).grelhar()
+
+                    elif o['args']['args']['drink'] != 0:
+                        nr = o['args']['args']['drink']
                         for i in range(nr):
-                            Bebidas(10)
-                            i+= 1
-                    elif o['args']['args']['potatoes'] != 0:
-                        nr = o['args']['args']['potatoes']
+                            Bebidas(1).prepBebida()
+
+                    elif o['args']['args']['fries'] != 0:
+                        nr = o['args']['args']['fries']
                         for i in range(nr):
-                            Fritadeira(50)
-                            i+= 1
+                            print(nr)
+                            Fritadeira(5).fritar()
+
                     self.send(self.successor_port,{'method': 'COOKED', 'args': o['args']})
             else:
                 if not self.ring_completed:
@@ -201,8 +200,8 @@ class Grelhador(object):
     def __init__(self, time):
         self.avg_time = time
 
-    def grelhar(self, avg_time):
-        time.sleep(random.gauss(avg_time, 5))
+    def grelhar(self):
+        time.sleep(random.gauss(self.avg_time, 0.5))
 
 
 
@@ -210,13 +209,13 @@ class Bebidas(object):
     def __init__(self, time):
         self.avg_time = time
 
-    def prepBebida(self, avg_time):
-        time.sleep(random.gauss(avg_time, 5))
+    def prepBebida(self):
+        time.sleep(random.gauss(self.avg_time, 0.5))
 
 
 class Fritadeira(object):
     def __init__(self, time):
         self.avg_time = time
 
-    def fritar(self, avg_time):
-        time.sleep(random.gauss(avg_time, 5))
+    def fritar(self):
+        time.sleep(random.gauss(self.avg_time, 0.5))
