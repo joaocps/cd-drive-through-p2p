@@ -148,6 +148,7 @@ class Restaurant(threading.Thread):
                 #recebe pedido
                 elif o['method'] == 'ORDER':
                     self.send(self.successor_port, o)
+                    print(self.successor_port)
 
                 #recebe pagamento do cliente e responde
                 elif o['method'] == 'DONE':
@@ -187,8 +188,9 @@ class Restaurant(threading.Thread):
                         for i in range(nr):
                             print(nr)
                             Fritadeira(5).fritar()
+                            print(nr)
 
-                    self.send(self.successor_port,{'method': 'COOKED', 'args': o['args']})
+                    self.send(self.successor_port, {'method': 'COOKED', 'args': o['args']})
             else:
                 if not self.ring_completed:
                     o = {'method': 'NODE_DISCOVERY', 'args': self.ring_ids_dict}
@@ -219,3 +221,4 @@ class Fritadeira(object):
 
     def fritar(self):
         time.sleep(random.gauss(self.avg_time, 0.5))
+        print("IMHERE")

@@ -128,21 +128,9 @@ class Chef(threading.Thread):
                     self.node_join(o['args'])
                 elif o['method'] == 'NODE_DISCOVERY':
                     self.node_discovery(o['args'])
-                elif o['method'] == 'TICKET':
-                    self.send(self.successor_port,o)
                 elif o['method'] == 'START':
                     self.send(self.successor_port, {'method': 'COOK', 'args': o['args']})
-                elif o['method'] == 'ORDER':
-                    self.send(self.successor_port,o)
-                elif o['method'] == 'COOK':
-                    self.send(self.successor_port,o)
-                elif o['method'] == 'DONE':
-                    self.send(self.successor_port,o)
-                elif o['method'] == 'COOKED':
-                    self.send(self.successor_port,o)
-                elif o['method'] == 'PICKUP':
-                    self.send(self.successor_port, o)
-                elif o['method'] == 'FINAL':
+                else:
                     self.send(self.successor_port, o)
 
 

@@ -132,18 +132,5 @@ class Waiter(threading.Thread):
                     ## colocar fila de espera queue
                     self.send(self.successor_port,{'method': 'TICKET', 'args': {'nr': self.count, 'args': o['args']}})
                     self.count+=1
-
-                elif o['method'] == 'COOK':
-                    self.send(self.successor_port,o)
-                elif o['method'] == 'COOKED':
-                    self.send(self.successor_port,o)
-                elif o['method'] == 'DONE':
-                    self.send(self.successor_port,o)
-                elif o['method'] == 'START':
-                    self.send(self.successor_port,o)
-                elif o['method'] == 'TICKET':
-                    self.send(self.successor_port,o)
-                elif o['method'] == 'PICKUP':
-                    self.send(self.successor_port, o)
-                elif o['method'] == 'FINAL':
+                else:
                     self.send(self.successor_port, o)
