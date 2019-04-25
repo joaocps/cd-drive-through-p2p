@@ -7,7 +7,7 @@ import random
 import logging
 import argparse
 import threading
-
+import queue
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
@@ -32,6 +32,9 @@ class Restaurant(threading.Thread):
         self.ring_address = ring_address
         self.ring_completed = False
         self.ring_ids_dict = {'RESTAURANT': self.id,'WAITER': None,'CHEF': None,'CLERK': None}
+        self.done = False
+        self.work = False
+        self.orders = queue.Queue()
 
         if ring_address is None:
             self.successor_id = self.id
@@ -145,30 +148,57 @@ class Restaurant(threading.Thread):
                 elif o['method'] == 'NODE_DISCOVERY' and not self.ring_completed:
                     self.node_discovery(o['args'])
 
-                #recebe pedido
                 elif o['method'] == 'ORDER':
                     self.send(self.successor_port, o)
-                    print(self.successor_port)
 
-                #recebe pagamento do cliente e responde
-                elif o['method'] == 'DONE':
-                    self.send(5004, o['args'])
-
-                elif o['method'] == 'COOKED':
+                elif o['method'] == 'COOKED' or o['method'] == 'START':
                     self.send(self.successor_port, o)
 
+                #cliente pergunta se está pronto e o pedido já esta pronto
+                elif o['method'] == 'PICKUP' and self.done == True:
+                    #print("pickup done")
+                    self.send(self.successor_port, o)
+
+                #cliente pergunta se está pronto e o pedido ainda não está esta pronto
+                elif o['method'] == 'PICKUP' and self.done == False:
+                    #print("pickup not done")
+                    pass
+
+                #pedido está pronto
+                elif o['method'] == 'DONE':
+                    self.done = True
+                    self.send(self.successor_port, {'method': 'DELIVER', 'args': o['args']})
+
+                #recebe o ticket e envia o feedback ao client e passa o ao sucessor
                 elif o['method'] == 'TICKET':
-                    self.send(5004, o)
+                    self.send(5004, {"args": {'number': o["args"]['number']}})
+                    self.orders.put(o['args'])
                     self.send(self.successor_port, {'method': 'START', 'args': o['args']})
 
-                elif o['method'] == 'START':
-                    self.send(self.successor_port, o)
+                    #code to use queue orders
+                    #if self.work == False:
+                    #    self.work = True
 
-                elif o['method'] == 'PICKUP':
-                    self.send(self.successor_port, o)
-
-                elif o['method'] == 'FINAL':
+                #entrega
+                elif o['method'] == 'DELIVER':
+                    self.done = False
                     self.send(5004, o)
+
+                    #code to use queue orders
+                    #self.work = False
+                    #self.orders.get(o['args'])
+                    #for elem in list(self.orders.queue):
+                    #    print(elem)
+                    #if len(self.orders.queue) == 0:
+                    #    self.send(self.successor_port, {'method': 'WAITING', 'args': 'no orders'})
+                    #else:
+                    #    self.send(self.successor_port, {'method': 'START', 'args': self.orders.get()})
+
+                #code to use queue orders
+                #elif o['method'] == 'WAITING' and len(self.orders.queue) == 0:
+                #    self.send(self.successor_port, o)
+                #elif o['method'] == 'WAITING' and len(self.orders.queue) != 0:
+                #    self.send(self.successor_port, {'method': 'START','args' : self.orders.get()})
 
                 #recebe o que tem de cozinhar
                 elif o['method'] == 'COOK':
@@ -186,11 +216,10 @@ class Restaurant(threading.Thread):
                     elif o['args']['args']['fries'] != 0:
                         nr = o['args']['args']['fries']
                         for i in range(nr):
-                            print(nr)
+                            #print(nr)
                             Fritadeira(5).fritar()
-                            print(nr)
 
-                    self.send(self.successor_port, {'method': 'COOKED', 'args': o['args']})
+                    self.send(self.successor_port,{'method': 'COOKED', 'args': o['args']})
             else:
                 if not self.ring_completed:
                     o = {'method': 'NODE_DISCOVERY', 'args': self.ring_ids_dict}
@@ -221,4 +250,3 @@ class Fritadeira(object):
 
     def fritar(self):
         time.sleep(random.gauss(self.avg_time, 0.5))
-        print("IMHERE")

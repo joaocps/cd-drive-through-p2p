@@ -129,9 +129,12 @@ class Clerk(threading.Thread):
                     self.node_join(o['args'])
                 elif o['method'] == 'NODE_DISCOVERY':
                     self.node_discovery(o['args'])
+
                 elif o['method'] == 'COOKED':
-                    self.send(self.successor_port,{'method': 'DONE', 'args': o['args']})
+                    self.send(self.successor_port, o)
+
                 elif o['method'] == 'PICKUP':
-                    self.send(self.successor_port, {'method': 'FINAL', 'args': o['args']['args']})
+                    self.send(self.successor_port, {'method': 'DELIVER', 'args': o['args']})
+
                 else:
-                    self.send(self.successor_port,o)
+                    self.send(self.successor_port, o)

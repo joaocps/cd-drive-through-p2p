@@ -129,8 +129,8 @@ class Waiter(threading.Thread):
                     self.node_discovery(o['args'])
 
                 elif o['method'] == 'ORDER':
-                    ## colocar fila de espera queue
-                    self.send(self.successor_port,{'method': 'TICKET', 'args': {'nr': self.count, 'args': o['args']}})
+                    self.send(self.successor_port,{'method': 'TICKET', 'args': {'number': self.count, 'args': o['args']}})
                     self.count+=1
+
                 else:
                     self.send(self.successor_port, o)
