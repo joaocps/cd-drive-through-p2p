@@ -167,7 +167,7 @@ class Restaurant(threading.Thread):
                 #pedido está pronto
                 elif o['method'] == 'DONE':
                     self.done = True
-                    self.send(self.successor_port, {'method': 'DELIVER', 'args': o['args']})
+                    self.send(self.successor_port, {'method': 'PICKUP', 'args': o['args']})
 
                 #recebe o ticket e envia o feedback ao client e passa o ao sucessor
                 elif o['method'] == 'TICKET':
