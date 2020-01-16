@@ -1,3 +1,4 @@
+# Project for distributed systems - 2nd year
 # Drive-Through Restaurant P2P
 
 ## Prerequisites
